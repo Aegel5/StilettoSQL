@@ -1,36 +1,47 @@
 ﻿namespace StilettoSQL;
 
 // Сконвертированные данные, которые отправляются в провайдер
-public class DataToDb {
+public class StDataToDb {
     public enum DbType { AutoSelect, Json }
     public object? data;
     public DbType dbType = DbType.AutoSelect;
 }
 
-public interface IConverterToDb {
-    bool Convert<T>(T value, out DataToDb? result);
+public interface IStConverterToDb {
+    bool Convert<T>(T value, out StDataToDb? result);
 }
 
-public interface IConverterFromDb {
+public interface IStConverterFromDb {
     bool Convert<T>(object value, out T? result);
 }
 
-public record Profile {
+public record StProfile {
+
+    public StProfile() {
+        Provider = ProviderFactory<PostgressProvider>.Instance;
+    }
+
+    public StProfile(StProviderType provider) {
+        if (provider == StProviderType.Postgress) {
+            Provider = ProviderFactory<PostgressProvider>.Instance;
+        }
+        throw new NotSupportedException();
+    }
 
     public string ConnectionString { get; init; } = "Server=127.0.0.1;Port=5432;User Id=postgres;Password=postgres;Database=postgres;Connection Idle Lifetime=900";
-    public EnumProvider Provider { get; init; } = EnumProvider.Postgress;
+    internal IDbProvider Provider { get; init; }
 
-    public IConverterToDb? UserConverterToDb { get; init; }
-    public IConverterFromDb? UserConverterFromDb { get; init; }
+    public IStConverterToDb? UserConverterToDb { get; init; }
+    public IStConverterFromDb? UserConverterFromDb { get; init; }
 
-    internal DataToDb ConvertToDb<T>(T data) {
+    internal StDataToDb ConvertToDb<T>(T data) {
 
         if (UserConverterToDb?.Convert(data, out var res) == true) {
             return res;
         } 
 
         // стандартный конверт
-        return new DataToDb { data = data };
+        return new StDataToDb { data = data };
     }
 
     internal T? ConvertFromDb<T>(object obj) {

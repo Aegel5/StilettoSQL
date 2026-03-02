@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StilettoSQL; 
+namespace StilettoSQL.Query; 
 public class Updater : Details.QueryBase {
     string tableName = "";
     string? whereSQL = null;
@@ -20,10 +20,10 @@ public class Updater : Details.QueryBase {
         StringBuilder sb = new();
         sb.Append("update ");
         sb.Append(tableName);
-        if (parms != null) {
+        if (namedParms != null) {
             sb.Append(" set ");
             bool first = true;
-            foreach (var item in parms) {
+            foreach (var item in namedParms) {
                 if(!first) sb.Append(",");
                 first = false;
                 sb.Append(item.Key);

@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using System.Transactions;
 
 namespace StilettoSQL;
-public sealed class AutoTransaction : IDisposable {
+public sealed class StAutoTransaction : IDisposable {
 
     private readonly TransactionScope _scope;
     private bool _ok;
 
-    public AutoTransaction() =>
+    public StAutoTransaction() =>
         _scope = new TransactionScope(
             TransactionScopeOption.Required, // Присоединиться к существующей, если есть
             new TransactionOptions { 

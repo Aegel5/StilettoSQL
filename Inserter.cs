@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StilettoSQL; 
+namespace StilettoSQL.Query; 
 public class Inserter : Details.QueryBase {
 
     string tableName = "";
@@ -22,11 +22,11 @@ public class Inserter : Details.QueryBase {
         StringBuilder sb = new();
         sb.Append("insert into ");
         sb.Append(tableName);
-        if (parms != null) {
-            sb.Append($"({string.Join(",", parms.Keys)})");
+        if (namedParms != null) {
+            sb.Append($"({string.Join(",", namedParms.Keys)})");
             sb.Append("values(");
             bool sec = false;
-            foreach (var item in parms) {
+            foreach (var item in namedParms) {
                 if (sec) sb.Append(",");
                 sec = true;
                 sb.Append("@");
@@ -40,7 +40,7 @@ public class Inserter : Details.QueryBase {
         }
 
         if (returnField != null) {
-            if (Global.CurrentProfile.Provider == EnumProvider.Postgress) {
+            if (StGlobal.CurrentProfile.Provider.Type == StProviderType.Postgress) {
                 sb.Append($" returning {returnField}");
             } else {
                 throw new NotSupportedException();

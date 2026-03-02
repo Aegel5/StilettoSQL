@@ -6,14 +6,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.AccessControl;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace StilettoSQL; 
 internal class PostgressProvider : IDbProvider {
+    public StProviderType Type => StProviderType.Postgress;
+    public bool PreferPositionParms => true;
+
     async Task<NpgsqlConnection> NewConnection() {
-        var res = new NpgsqlConnection(Global.CurrentProfile.ConnectionString);
+        var res = new NpgsqlConnection(StGlobal.CurrentProfile.ConnectionString);
         await res.OpenAsync();
         return res;
     }
@@ -22,26 +27,30 @@ internal class PostgressProvider : IDbProvider {
         if (parms.timeout != null) {
             cmd.CommandTimeout = (int)parms.timeout.Value.TotalSeconds;
         }
-        if (parms.fields != null) {
-            foreach (var item in parms.fields) {
-                if (item.Value == null) {
-                    cmd.Parameters.AddWithValue("@" + item.Key, DBNull.Value);
-                } else {
-                    if (item.Value.dbType == DataToDb.DbType.Json) {
-                        cmd.Parameters.AddWithValue("@" + item.Key, NpgsqlDbType.Json, item.Value.data);
-                    } else {
-                        cmd.Parameters.AddWithValue("@" + item.Key, item.Value.data);
+        if (parms.positionParms != null) {
+            foreach (var item in parms.positionParms) {
+                var p = cmd.CreateParameter();
+                // Приводим к NpgsqlParameter, чтобы получить доступ к специфическим полям Postgres
+                if (p is NpgsqlParameter npgsqlParam) {
+                    if (item.dbType == StDataToDb.DbType.Json) {
+                        // Используем Json или Jsonb (Jsonb быстрее и современнее)
+                        npgsqlParam.NpgsqlDbType = NpgsqlDbType.Json;
                     }
                 }
+                p.Value = item.data ?? DBNull.Value;
+                cmd.Parameters.Add(p);
             }
+
         }
         return cmd;
     }
-    public async Task<DbDataReader> ExecuteReader(ParamsForProvider parms) {
+    public async IAsyncEnumerable<DbDataReader> ExecuteReader(ParamsForProvider parms) {
         using var con = await NewConnection();
         using var cmd = NewCommand(con, parms);
-        var res = await cmd.ExecuteReaderAsync();
-        return res;
+        using var rdr = await cmd.ExecuteReaderAsync();
+        while (await rdr.ReadAsync()) {
+            yield return rdr;
+        }
     }
     async public Task<object?> ExecuteScalar(ParamsForProvider parms) {
         using var con = await NewConnection();
