@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace StilettoSQL;
-public sealed class AutoProfiler : IDisposable {
+public sealed class AutoProfile : IDisposable {
 
     private readonly Profile? _old;
 
-    public AutoProfiler(Profile newProfile) {
+    public AutoProfile(Profile newProfile) {
         _old = Global.CurrentProfile_.Value;
         Global.CurrentProfile_.Value = newProfile;
     }

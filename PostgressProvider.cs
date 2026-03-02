@@ -11,41 +11,46 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace StilettoSQL; 
-public class PostgressProvider : IDbProvider {
+internal class PostgressProvider : IDbProvider {
     string connString;
     public PostgressProvider(string conn) {
         connString = conn;
     }
     NpgsqlConnection NewConnection() => new NpgsqlConnection(connString);
-    NpgsqlCommand NewCommand(NpgsqlConnection con, string sql, Dictionary<string, DataToDb> parms) {
-        NpgsqlCommand cmd = new(sql, con);
-        foreach (var item in parms) {
-            if (item.Value == null) {
-                cmd.Parameters.AddWithValue("@" + item.Key, DBNull.Value);
-            } else {
-                if (item.Value.customType == DataToDb.CustomType.Json) {
-                    cmd.Parameters.AddWithValue("@" + item.Key, NpgsqlDbType.Json, item.Value.data);
+    NpgsqlCommand NewCommand(NpgsqlConnection con, ParamsForProvider parms) {
+        NpgsqlCommand cmd = new(parms.sql, con);
+        if (parms.timeout != null) {
+            cmd.CommandTimeout = (int)parms.timeout.Value.TotalSeconds;
+        }
+        if (parms.fields != null) {
+            foreach (var item in parms.fields) {
+                if (item.Value == null) {
+                    cmd.Parameters.AddWithValue("@" + item.Key, DBNull.Value);
                 } else {
-                    cmd.Parameters.AddWithValue("@" + item.Key, item.Value.data);
+                    if (item.Value.customType == DataToDb.CustomType.Json) {
+                        cmd.Parameters.AddWithValue("@" + item.Key, NpgsqlDbType.Json, item.Value.data);
+                    } else {
+                        cmd.Parameters.AddWithValue("@" + item.Key, item.Value.data);
+                    }
                 }
             }
         }
         return cmd;
     }
-    async public Task<DbDataReader> ExecuteReader(string sql, Dictionary<string, DataToDb> parms) {
+    public async Task<DbDataReader> ExecuteReader(ParamsForProvider parms) {
         using var con = NewConnection();
-        using var cmd = NewCommand(con, sql, parms);
+        using var cmd = NewCommand(con, parms);
         var res = await cmd.ExecuteReaderAsync();
         return res;
     }
-    public Task<object?> ExecuteScalar(string sql, Dictionary<string, DataToDb> parms) {
+    public Task<object?> ExecuteScalar(ParamsForProvider parms) {
         using var con = NewConnection();
-        using var cmd = NewCommand(con, sql, parms);
+        using var cmd = NewCommand(con, parms);
         return cmd.ExecuteScalarAsync();
     }
-    public Task<int> ExecuteNonQuery(string sql, Dictionary<string, DataToDb> parms) {
+    public Task<int> ExecuteNonQuery(ParamsForProvider parms) {
         using var con = NewConnection();
-        using var cmd = NewCommand(con, sql, parms);
+        using var cmd = NewCommand(con, parms);
         return cmd.ExecuteNonQueryAsync();
     }
 }

@@ -1,7 +1,16 @@
 ﻿namespace StilettoSQL;
 
 public record Profile {
-    public IDbProvider Provider { get; init; } = new PostgressProvider("Server=127.0.0.1;Port=5432;User Id=postgres;Password=postgres;Database=postgres;Connection Idle Lifetime=900");
+
+    public string ConnectionString = "Server=127.0.0.1;Port=5432;User Id=postgres;Password=postgres;Database=postgres;Connection Idle Lifetime=900";
+    public EnumProvider Provider = EnumProvider.Postgress;
+
+    internal IDbProvider ProviderImpl { get; init; }
+
+    public Profile() {
+        ProviderImpl = new PostgressProvider(ConnectionString);
+    }
+
     public Func<object, DataToDb>? CustomDataConverterToDb { get; init; } = null;
 
     public delegate bool CustomDataConverterFromDbDelegate(object input, Type T, out object result);

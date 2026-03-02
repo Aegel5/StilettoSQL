@@ -7,10 +7,20 @@ using System.Threading.Tasks;
 
 namespace StilettoSQL;
 
-public interface IDbProvider {
-    public Task<DbDataReader> ExecuteReader(string sql, Dictionary<string, DataToDb> parms);
-    public Task<object?> ExecuteScalar(string sql, Dictionary<string, DataToDb> parms);
-    public Task<int> ExecuteNonQuery(string sql, Dictionary<string, DataToDb> parms);
+public enum EnumProvider {
+    Postgress
+}
+
+internal record ParamsForProvider {
+    public required string sql { get; init; }
+    public Dictionary<string, DataToDb>? fields { get; init; }
+    public TimeSpan? timeout { get; init; }
+}
+
+internal interface IDbProvider {
+    Task<DbDataReader> ExecuteReader(ParamsForProvider parms);
+    Task<object?> ExecuteScalar(ParamsForProvider parms);
+    Task<int> ExecuteNonQuery(ParamsForProvider parms);
 
 }
 

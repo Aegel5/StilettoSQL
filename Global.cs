@@ -10,7 +10,7 @@ public static class Global {
     public static readonly Profile DefaultProfile = new();
     internal static AsyncLocal<Profile?> CurrentProfile_ = new();
     public static Profile CurrentProfile => CurrentProfile_.Value ?? DefaultProfile;
-    public static IDbProvider CurrentProvider => CurrentProfile.Provider;
+    internal static IDbProvider CurrentProvider => CurrentProfile.ProviderImpl;
 }
 
 
