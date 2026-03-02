@@ -10,7 +10,7 @@ public class Query : Details.QueryBase {
 
     string sql = "";
     string ResultSQL { get => PreProcessQuery(sql); }
-    public static Query Create(string sql) => new Query { sql = sql };
+    public Query(string sql) { this.sql = sql; }
 
     async public IAsyncEnumerable<DbDataReader> ReadAllRows() {
         var rdr = await ExecuteReader(ResultSQL);
@@ -24,10 +24,14 @@ public class Query : Details.QueryBase {
         // todo: check row only 1.
         return rdr;
     }
-    public Task<int> ExecuteNonQuery() {
+    public Task<int> ExecuteInt() {
         return base.ExecuteNonQuery(ResultSQL);
     }
     public Task<object?> ExecuteScalar() {
         return base.ExecuteScalar(ResultSQL);
+    }
+    protected new Query Add<T>(string fieldName, T data) {
+        base.Add(fieldName, data);
+        return this;
     }
 }

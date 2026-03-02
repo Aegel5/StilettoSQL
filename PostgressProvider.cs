@@ -12,11 +12,11 @@ using System.Threading.Tasks;
 
 namespace StilettoSQL; 
 internal class PostgressProvider : IDbProvider {
-    string connString;
-    public PostgressProvider(string conn) {
-        connString = conn;
+    async Task<NpgsqlConnection> NewConnection() {
+        var res = new NpgsqlConnection(Global.CurrentProfile.ConnectionString);
+        await res.OpenAsync();
+        return res;
     }
-    NpgsqlConnection NewConnection() => new NpgsqlConnection(connString);
     NpgsqlCommand NewCommand(NpgsqlConnection con, ParamsForProvider parms) {
         NpgsqlCommand cmd = new(parms.sql, con);
         if (parms.timeout != null) {
@@ -27,7 +27,7 @@ internal class PostgressProvider : IDbProvider {
                 if (item.Value == null) {
                     cmd.Parameters.AddWithValue("@" + item.Key, DBNull.Value);
                 } else {
-                    if (item.Value.customType == DataToDb.CustomType.Json) {
+                    if (item.Value.dbType == DataToDb.DbType.Json) {
                         cmd.Parameters.AddWithValue("@" + item.Key, NpgsqlDbType.Json, item.Value.data);
                     } else {
                         cmd.Parameters.AddWithValue("@" + item.Key, item.Value.data);
@@ -38,19 +38,19 @@ internal class PostgressProvider : IDbProvider {
         return cmd;
     }
     public async Task<DbDataReader> ExecuteReader(ParamsForProvider parms) {
-        using var con = NewConnection();
+        using var con = await NewConnection();
         using var cmd = NewCommand(con, parms);
         var res = await cmd.ExecuteReaderAsync();
         return res;
     }
-    public Task<object?> ExecuteScalar(ParamsForProvider parms) {
-        using var con = NewConnection();
+    async public Task<object?> ExecuteScalar(ParamsForProvider parms) {
+        using var con = await NewConnection();
         using var cmd = NewCommand(con, parms);
-        return cmd.ExecuteScalarAsync();
+        return await cmd.ExecuteScalarAsync();
     }
-    public Task<int> ExecuteNonQuery(ParamsForProvider parms) {
-        using var con = NewConnection();
+    async public Task<int> ExecuteNonQuery(ParamsForProvider parms) {
+        using var con = await NewConnection();
         using var cmd = NewCommand(con, parms);
-        return cmd.ExecuteNonQueryAsync();
+        return await cmd.ExecuteNonQueryAsync();
     }
 }

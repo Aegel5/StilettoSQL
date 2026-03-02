@@ -24,3 +24,9 @@ internal interface IDbProvider {
 
 }
 
+internal static class ProviderFactory<T> where T : class, IDbProvider, new() {
+    // Этот экземпляр будет уникальным для каждого конкретного типа T
+    // Инициализируется лениво и потокобезопасно самим .NET при первом обращении
+    public static readonly T Instance = new T();
+}
+

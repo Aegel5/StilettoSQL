@@ -58,4 +58,9 @@ public class Inserter : Details.QueryBase {
     public Task<int> Finish_GetRowTouched() {
         return ExecuteNonQuery(BuildSql());
     }
+
+    public new Inserter Add<T>(string fieldName, T data) {
+        base.Add(fieldName, data);
+        return this;
+    }
 }

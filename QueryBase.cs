@@ -14,17 +14,15 @@ namespace StilettoSQL.Details;
 
 public class QueryBase {
 
-    protected Dictionary<string, object>? parms;
+    protected Dictionary<string, DataToDb>? parms;
     TimeSpan? timeout;
 
     ParamsForProvider CreateParms(string sql) {
         var res = new ParamsForProvider {
             sql = sql,
-            timeout = timeout
+            timeout = timeout,
+            fields = parms
         };
-        if (parms != null) {
-            res = res with { fields = Global.CurrentProfile.ConvertToDb(parms) };
-        }
         return res;
     }
 
@@ -51,11 +49,9 @@ public class QueryBase {
         return res;
     }
 
-
-    public QueryBase Add(string fieldName, object data) {
+    protected void Add<T>(string fieldName, T data) {
         if (parms == null) parms = new();
-        parms.Add(fieldName, data);
-        return this;
+        parms.Add(fieldName, Global.CurrentProfile.ConvertToDb(data));
     }
 
     public QueryBase Timeout(TimeSpan timeout) {

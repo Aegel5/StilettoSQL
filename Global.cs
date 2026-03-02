@@ -7,10 +7,16 @@ using System.Threading.Tasks;
 
 namespace StilettoSQL; 
 public static class Global {
-    public static readonly Profile DefaultProfile = new();
+    public static Profile DefaultProfile = new();
     internal static AsyncLocal<Profile?> CurrentProfile_ = new();
     public static Profile CurrentProfile => CurrentProfile_.Value ?? DefaultProfile;
-    internal static IDbProvider CurrentProvider => CurrentProfile.ProviderImpl;
+    internal static IDbProvider CurrentProvider {
+        get {
+            if (CurrentProfile.Provider == EnumProvider.Postgress)
+                return ProviderFactory<PostgressProvider>.Instance;
+            throw new NotSupportedException();
+        }
+    }
 }
 
 
