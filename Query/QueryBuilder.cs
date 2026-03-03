@@ -72,20 +72,20 @@ public class QueryBuilder : QueryBase {
         return this;
     }
 
-    public Query ToQuery() {
-        return new Query(sb.ToString(), this);
-    }
-
     public override string ToString() {
         return sb.ToString();
     }
 
     public IAsyncEnumerable<DbDataReader> ReadAllRows() {
-        return ToQuery().ReadAllRows();
+        return ExecuteReader(ToString());
     }
 
     public Task<int> Exec_GetRowsTouched() {
-        return ToQuery().Exec_GetRowsTouched();
+        return ExecuteNonQuery(ToString());
+    }
+
+    public Task<T?> ExecuteScalar<T>() {
+        return ExecuteScalar<T>(ToString());
     }
 
 }

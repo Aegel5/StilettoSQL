@@ -26,7 +26,7 @@ internal class PostgressProvider : IDbProvider {
         NpgsqlCommand cmd = new(parms.sql, con);
         if (parms.timeout != null) {
             cmd.CommandTimeout = (int)parms.timeout.Value.TotalSeconds;
-        }
+        } 
         if (parms.positionParms != null) {
             foreach (var item in parms.positionParms) {
                 var p = cmd.CreateParameter();
@@ -57,7 +57,8 @@ internal class PostgressProvider : IDbProvider {
         using var con = NewConnection();
         using var cmd = NewCommand(con, parms);
         await con.OpenAsync();
-        return await cmd.ExecuteScalarAsync();
+        var res = await cmd.ExecuteScalarAsync();
+        return res;
     }
     async public Task<int> ExecuteNonQuery(ParamsForProvider parms) {
         using var con = NewConnection();

@@ -34,7 +34,7 @@ public record StProfile {
     public IStConverterToDb? UserConverterToDb { get; init; }
     public IStConverterFromDb? UserConverterFromDb { get; init; }
 
-    internal StDataToDb ConvertToDb<T>(T data) {
+    internal StDataToDb ConvertToDb<T>(T? data) {
 
         var res = UserConverterToDb?.Convert(data);
         if (res != null) {
@@ -47,13 +47,13 @@ public record StProfile {
 
     internal T? ConvertFromDb<T>(object? obj) {
 
-        if (UserConverterFromDb?.Convert(obj, out T res) == true){
+        if (UserConverterFromDb?.Convert(obj, out T? res) == true){
             return res;
         }
 
         // делаем стандартный конверт
 
-        if (obj is DBNull) {
+        if (obj is null or DBNull) {
 
             Type type = typeof(T);
 

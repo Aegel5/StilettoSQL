@@ -23,9 +23,9 @@ public class Query : Internal.QueryBase {
         return this;
     }
 
-    internal Query(string sql, QueryBase qbase):base(qbase) {
-        this.sql = sql;
-    }
+    //internal Query(string sql, QueryBase qbase):base(qbase) {
+    //    this.sql = sql;
+    //}
 
     public IAsyncEnumerable<DbDataReader> ReadAllRows() {
         return ExecuteReader(sql);

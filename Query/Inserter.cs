@@ -34,7 +34,7 @@ public class Inserter : Internal.QueryBase {
             sb.Append('(');
             int count = 0;
             foreach (var item in names) {
-                if (count != 1) sb.Append(",");
+                if (++count != 1) sb.Append(",");
                 sb.Append(item.name);
             }
             sb.Append(')');
@@ -43,8 +43,7 @@ public class Inserter : Internal.QueryBase {
             sb.Append("values(");
             count = 0;
             foreach (var item in names) {
-                count++;
-                if (count != 1) sb.Append(",");
+                if (++count != 1) sb.Append(",");
                 if (item.sql != null) {
                     sb.Append(item.sql);
                 } else {
@@ -71,11 +70,11 @@ public class Inserter : Internal.QueryBase {
     }
 
 
-    public Task<long> Exec_GetLong(string fieldName = "id") {
-        return Exec_GetScalar<long>(fieldName);
-    }
+    //public Task<long> ExecuteLong(string fieldName = "id") {
+    //    return ExecuteScalar<long>(fieldName);
+    //}
 
-    public Task<T?> Exec_GetScalar<T>(string fieldName = "id") {
+    public new Task<T?> ExecuteScalar<T>(string fieldName = "id") {
         return base.ExecuteScalar<T>(BuildSql(fieldName));
     }
 

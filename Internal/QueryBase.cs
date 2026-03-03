@@ -48,9 +48,7 @@ public class QueryBase {
 
     ParamsForProvider CreateProviderParms(string sql) {
 
-        if (positionParms != null) {
-            sql = PreprocessSQL.ReplacePlaceholders(sql);
-        }
+        sql = ReplacePlaceholders(sql);
 
         var res = new ParamsForProvider {
             sql = sql,
@@ -76,6 +74,44 @@ public class QueryBase {
         return StGlobal.CurrentProvider.ExecuteReader(CreateProviderParms(sql));
     }
 
+    public string ReplacePlaceholders(string sql) {
+
+        if (positionParms == null) return sql;
+
+        StringBuilder? sb = null;
+        int i_prev = 0;
+        int count = 0;
+        int i = 0;
+        while (i < sql.Length - 1) {
+
+            // todo: skip strings
+
+            if (sql[i] == '?' && sql[i + 1] == '?') {
+                sb ??= new(sql.Length + Math.Max(0, positionParms.Count - 8));
+                sb.Append(sql, i_prev, i - i_prev);
+                sb.Append('$');
+                sb.Append(++count);
+                i+=2;
+                i_prev = i;
+            } else {
+                i++;
+            }
+
+        }
+
+        if (count == 0) {
+            // ok user can use native $1, $2, ...
+            return sql;
+        }
+
+        sb.Append(sql, i_prev, i - i_prev + 1);
+
+        if (count != positionParms.Count)
+            throw new Exception($"Excepted {count} parms. Have: {positionParms.Count}");
+
+        var res = sb.ToString();
+        return res;
+    }
 
 
 
