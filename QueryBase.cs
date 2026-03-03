@@ -18,6 +18,24 @@ public class QueryBase {
     protected List<StDataToDb>? positionParms;
     TimeSpan? timeout;
 
+    internal QueryBase(QueryBase initFrom) {
+        namedParms = initFrom.namedParms;
+        positionParms = initFrom.positionParms;
+    }
+
+    internal QueryBase() { }
+
+    protected void Add<T>(T data) {
+        positionParms ??= new();
+        positionParms.Add(StGlobal.CurrentProfile.ConvertToDb(data));
+    }
+
+    protected void AddPosParms(params object[] list) {
+        foreach (var item in list) {
+            Add(item);
+        }
+    }
+
     ParamsForProvider CreateParms(string sql) {
 
         if ((namedParms?.Count ?? 0) > 0 && (positionParms?.Count ?? 0) > 0)
@@ -32,17 +50,15 @@ public class QueryBase {
         return res;
     }
 
-    // Кэш: Ключ — ваш шаблон с $$, Значение — готовый SQL с @параметрами
     private static readonly ConcurrentDictionary<string, string> _sqlCache = new();
 
-    // Скомпилированная регулярка (живет один раз)
     private static readonly Regex _regex = new(
-        @"(?i)(\w+)(?:[^\w]|\b(?:LIKE|IN|NOT|IS)\b)+\$\$",
+        @"(?i)(\w+)(?:[^\w]|\b(?:LIKE|IN|NOT|IS)\b)+\?\?",
         RegexOptions.Compiled);
 
     protected string PreProcessQuery(string template) {
 
-        if (!template.Contains("$$")) {
+        if (!template.Contains("??")) {
             return template;
         }
 
@@ -57,7 +73,7 @@ public class QueryBase {
             string resultSql = "";
             if (StGlobal.CurrentProvider.PreferPositionParms) {
                 // просто меняем $$ на $1, $2 и т.д.
-                resultSql = Regex.Replace(template, @"\$\$", m => {
+                resultSql = Regex.Replace(template, @"\?\?", m => {
                     count++;
                     return "$" + count; // Возвращаем $1, $2 и т.д.
                 });
@@ -95,10 +111,10 @@ public class QueryBase {
 
 
 
-    public QueryBase Timeout(TimeSpan timeout) {
-        this.timeout = timeout;
-        return this;
-    }
+    //public QueryBase Timeout(TimeSpan timeout) {
+    //    this.timeout = timeout;
+    //    return this;
+    //}
 
     protected Task<int> ExecuteNonQuery(string sql) {
         return StGlobal.CurrentProvider.ExecuteNonQuery(CreateParms(sql));

@@ -8,7 +8,7 @@ public class StDataToDb {
 }
 
 public interface IStConverterToDb {
-    bool Convert<T>(T value, out StDataToDb? result);
+    StDataToDb? Convert(object? value);
 }
 
 public interface IStConverterFromDb {
@@ -36,7 +36,8 @@ public record StProfile {
 
     internal StDataToDb ConvertToDb<T>(T data) {
 
-        if (UserConverterToDb?.Convert(data, out var res) == true) {
+        var res = UserConverterToDb?.Convert(data);
+        if (res != null) {
             return res;
         } 
 
