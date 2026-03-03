@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StilettoSQL;
-public sealed class StAutoProfile : IDisposable {
+namespace StilettoSQL.Profile;
+public sealed class AutoProfile : IDisposable {
 
     private readonly StProfile? _old;
 
-    public StAutoProfile(StProfile newProfile) {
+    public AutoProfile(StProfile newProfile) {
         _old = StGlobal.CurrentProfile_.Value;
         StGlobal.CurrentProfile_.Value = newProfile;
     }

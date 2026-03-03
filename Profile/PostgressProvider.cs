@@ -12,7 +12,8 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace StilettoSQL; 
+namespace StilettoSQL.Profile; 
+
 internal class PostgressProvider : IDbProvider {
     public StProviderType Type => StProviderType.Postgress;
     public bool PreferPositionParms => true;

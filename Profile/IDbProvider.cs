@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StilettoSQL;
+namespace StilettoSQL.Profile;
 
 public enum StProviderType {
     Postgress
@@ -13,7 +13,7 @@ public enum StProviderType {
 
 internal record ParamsForProvider {
     public required string sql { get; init; }
-    public Dictionary<string, StDataToDb>? namedParms { get; init; }
+    //public Dictionary<string, StDataToDb>? namedParms { get; init; }
     public List<StDataToDb>? positionParms { get; init; }
     public TimeSpan? timeout { get; init; }
 }

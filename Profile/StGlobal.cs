@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StilettoSQL; 
+namespace StilettoSQL.Profile; 
 public static class StGlobal {
     public static StProfile DefaultProfile = new();
     internal static AsyncLocal<StProfile?> CurrentProfile_ = new();

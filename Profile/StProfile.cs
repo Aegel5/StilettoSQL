@@ -1,4 +1,4 @@
-﻿namespace StilettoSQL;
+﻿namespace StilettoSQL.Profile;
 
 // Сконвертированные данные, которые отправляются в провайдер
 public class StDataToDb {
@@ -12,7 +12,7 @@ public interface IStConverterToDb {
 }
 
 public interface IStConverterFromDb {
-    bool Convert<T>(object value, out T? result);
+    bool Convert<T>(object? value, out T? result);
 }
 
 public record StProfile {
@@ -45,7 +45,7 @@ public record StProfile {
         return new StDataToDb { data = data };
     }
 
-    internal T? ConvertFromDb<T>(object obj) {
+    internal T? ConvertFromDb<T>(object? obj) {
 
         if (UserConverterFromDb?.Convert(obj, out T res) == true){
             return res;

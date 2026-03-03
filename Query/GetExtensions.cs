@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using StilettoSQL.Profile;
+using System.Data.Common;
 
 namespace StilettoSQL.Query; 
 public static class _DbLoader_Extension {

@@ -1,4 +1,5 @@
-﻿using StilettoSQL.Details;
+﻿using StilettoSQL.Internal;
+using StilettoSQL.Profile;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -8,10 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace StilettoSQL.Query; 
-public class Query : Details.QueryBase {
+
+public class Query : Internal.QueryBase {
 
     string sql = "";
-    string ResultSQL { get => PreProcessQuery(sql); }
     public Query(string sql, params object[] list) {
         this.sql = sql;
         AddPosParms(list);
@@ -22,21 +23,20 @@ public class Query : Details.QueryBase {
     }
 
     public IAsyncEnumerable<DbDataReader> ReadAllRows() {
-        return ExecuteReader(ResultSQL);
+        return ExecuteReader(sql);
     }
     //async public Task<DbDataReader> ReadSingleRow() {
     //    // todo: check row excactly 1. do copy data because we must close connection in this function.
     //    throw new NotSupportedException();
     //}
     public Task<int> ExecuteNonQuery() {
-        return base.ExecuteNonQuery(ResultSQL);
+        return base.ExecuteNonQuery(sql);
+    }
+    public Task<T?> ExecuteScalar<T>() {
+        return base.ExecuteScalar<T>(sql);
     }
     public Task<object?> ExecuteScalar() {
-        return base.ExecuteScalar(ResultSQL);
-    }
-    public new Query Add<T>(string fieldName, T data) {
-        base.Add(fieldName, data);
-        return this;
+        return base.ExecuteScalar(sql);
     }
 
 
@@ -45,8 +45,18 @@ public class Query : Details.QueryBase {
         return q.ReadAllRows();
     }
 
-    public static Task<int> Exec_GetRowsToched(string sql, params object[] list) {
+    public static Task<int> Exec_GetRowsTouched(string sql, params object[] list) {
         var q = new Query(sql, list);
         return q.ExecuteNonQuery();
     }
+
+    public static Task<T?> Exec_GetValue<T>(string sql, params object[] list) {
+        return new Query(sql, list).ExecuteScalar<T>();
+    }
+
+
+    public Task<int> Exec_GetRowsTouched() {
+        return ExecuteNonQuery();
+    }
+
 }
