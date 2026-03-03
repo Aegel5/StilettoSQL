@@ -16,7 +16,7 @@ namespace StilettoSQL.Internal;
 public class QueryBase {
 
     internal List<StDataToDb>? positionParms;
-    public TimeSpan? Timeout { get; set; }
+    protected TimeSpan? _Timeout { get; set; }
 
     internal QueryBase(QueryBase initFrom) {
         positionParms = initFrom.positionParms;
@@ -54,7 +54,7 @@ public class QueryBase {
 
         var res = new ParamsForProvider {
             sql = sql,
-            timeout = Timeout,
+            timeout = _Timeout,
             positionParms = positionParms
         };
         return res;

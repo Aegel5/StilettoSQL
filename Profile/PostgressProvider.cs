@@ -18,9 +18,8 @@ internal class PostgressProvider : IDbProvider {
     public StProviderType Type => StProviderType.Postgress;
     public bool PreferPositionParms => true;
 
-    async Task<NpgsqlConnection> NewConnection() {
+    NpgsqlConnection NewConnection() {
         var res = new NpgsqlConnection(StGlobal.CurrentProfile.ConnectionString);
-        await res.OpenAsync();
         return res;
     }
     NpgsqlCommand NewCommand(NpgsqlConnection con, ParamsForProvider parms) {
@@ -46,21 +45,24 @@ internal class PostgressProvider : IDbProvider {
         return cmd;
     }
     public async IAsyncEnumerable<DbDataReader> ExecuteReader(ParamsForProvider parms) {
-        using var con = await NewConnection();
+        using var con = NewConnection();
         using var cmd = NewCommand(con, parms);
+        await con.OpenAsync();
         using var rdr = await cmd.ExecuteReaderAsync();
         while (await rdr.ReadAsync()) {
             yield return rdr;
         }
     }
     async public Task<object?> ExecuteScalar(ParamsForProvider parms) {
-        using var con = await NewConnection();
+        using var con = NewConnection();
         using var cmd = NewCommand(con, parms);
+        await con.OpenAsync();
         return await cmd.ExecuteScalarAsync();
     }
     async public Task<int> ExecuteNonQuery(ParamsForProvider parms) {
-        using var con = await NewConnection();
+        using var con = NewConnection();
         using var cmd = NewCommand(con, parms);
+        await con.OpenAsync();
         return await cmd.ExecuteNonQueryAsync();
     }
 }

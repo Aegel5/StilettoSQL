@@ -18,6 +18,11 @@ public class Query : Internal.QueryBase {
         AddPosParms(list);
     }
 
+    public Query Timeout(TimeSpan timeout) {
+        _Timeout = timeout;
+        return this;
+    }
+
     internal Query(string sql, QueryBase qbase):base(qbase) {
         this.sql = sql;
     }
@@ -50,8 +55,13 @@ public class Query : Internal.QueryBase {
         return q.ExecuteNonQuery();
     }
 
-    public static Task<T?> Exec_GetValue<T>(string sql, params object[] list) {
+    public static Task<T?> Exec_GetScalar<T>(string sql, params object[] list) {
         return new Query(sql, list).ExecuteScalar<T>();
+    }
+
+    public Query Value(object obj) {
+        AddPosParm(obj);
+        return this;
     }
 
 
