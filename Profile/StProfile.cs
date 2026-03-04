@@ -39,7 +39,7 @@ public record StProfile {
         var res = UserConverterToDb?.Convert(data);
         if (res != null) {
             return res;
-        } 
+        }
 
         // стандартный конверт
         return new StDataToDb { data = data };

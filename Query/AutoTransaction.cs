@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Transactions;
+﻿using System.Transactions;
 
 namespace StilettoSQL.Query;
 
@@ -16,7 +10,7 @@ public sealed class AutoTransaction : IDisposable {
     public AutoTransaction() =>
         _scope = new TransactionScope(
             TransactionScopeOption.Required, // Присоединиться к существующей, если есть
-            new TransactionOptions { 
+            new TransactionOptions {
                 IsolationLevel = IsolationLevel.ReadCommitted,
                 Timeout = TimeSpan.FromMinutes(10),
             },

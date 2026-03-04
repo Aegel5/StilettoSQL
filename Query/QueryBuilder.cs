@@ -1,13 +1,8 @@
 ﻿using StilettoSQL.Internal;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace StilettoSQL.Query; 
+namespace StilettoSQL.Query;
 
 public class QueryBuilder : QueryBase {
 
@@ -49,8 +44,9 @@ public class QueryBuilder : QueryBase {
             Append("AND ");
         }
 
+        AddPosParms(list);
         sb.Append('(');
-        Append(sql, list);
+        sb.Append(sql);
         sb.Append(')');
 
         return this;

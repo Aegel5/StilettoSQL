@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-namespace StilettoSQL.Query; 
+namespace StilettoSQL.Query;
 
 public class Query : Internal.QueryBase {
 

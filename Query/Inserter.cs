@@ -1,11 +1,7 @@
 ﻿using StilettoSQL.Profile;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace StilettoSQL.Query; 
+namespace StilettoSQL.Query;
 public class Inserter : Internal.QueryBase {
 
     List<(string name, string? sql)> names = new();
@@ -25,7 +21,7 @@ public class Inserter : Internal.QueryBase {
     string BuildSql(string? returnField = null) {
 
         StringBuilder sb = new();
-        sb.Append("insert into ");
+        sb.Append("INSERT into ");
         sb.Append(tableName);
 
         if (names.Count > 0) {
@@ -40,7 +36,7 @@ public class Inserter : Internal.QueryBase {
             sb.Append(')');
 
             // values
-            sb.Append("values(");
+            sb.Append(" VALUES (");
             count = 0;
             foreach (var item in names) {
                 if (++count != 1) sb.Append(",");
@@ -69,7 +65,7 @@ public class Inserter : Internal.QueryBase {
         return res;
     }
 
-    public new Task<T?> ExecuteScalar<T>(string fieldName = "id") {
+    public Task<T?> ExecuteReturnField<T>(string fieldName = "id") {
         return base.ExecuteScalar<T>(BuildSql(fieldName));
     }
 
@@ -79,13 +75,13 @@ public class Inserter : Internal.QueryBase {
 
     public Inserter Value(string fieldName, object? data) {
         AddPosParm(data);
-        names.Add((fieldName,null));
+        names.Add((fieldName, null));
         return this;
     }
 
     public Inserter ValueSql(string fieldName, QueryBuilder q) {
         ConsumeParmsFrom(q);
-        names.Add((fieldName,q.ToString()));
+        names.Add((fieldName, q.ToString()));
         return this;
     }
 

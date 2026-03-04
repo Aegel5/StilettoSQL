@@ -1,18 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
+﻿using Npgsql;
 using NpgsqlTypes;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Common;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using System.Security.AccessControl;
-using System.Text;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 
-namespace StilettoSQL.Profile; 
+
+namespace StilettoSQL.Profile;
 
 internal class PostgressProvider : IDbProvider {
     public StProviderType Type => StProviderType.Postgress;
@@ -26,7 +17,7 @@ internal class PostgressProvider : IDbProvider {
         NpgsqlCommand cmd = new(parms.sql, con);
         if (parms.timeout != null) {
             cmd.CommandTimeout = (int)parms.timeout.Value.TotalSeconds;
-        } 
+        }
         if (parms.positionParms != null) {
             foreach (var item in parms.positionParms) {
                 var p = cmd.CreateParameter();

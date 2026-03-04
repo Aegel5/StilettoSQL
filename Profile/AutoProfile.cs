@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace StilettoSQL.Profile;
+﻿namespace StilettoSQL.Profile;
 public sealed class AutoProfile : IDisposable {
 
     private readonly StProfile? _old;

@@ -1,21 +1,25 @@
-﻿using StilettoSQL;
-
-// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-
-var rd = await QueryBase.Create("select * from table where id=$$")
-    .Add("id", 100)
-    .ReadOneRow();
-rd.LoadOut("id", out long id);
-
-async void Test() {
-    await foreach (var rd in new QueryBase("select * from pg_catalog.pg_tables")
-        .ReadAllRows()) {
-
-        rd.LoadOut("test", out string val);
-
-    }
+﻿using StilettoSQL.Profile;
+using StilettoSQL.Query; {
+    using var _holder = new AutoProfile(new StProfile { ConnectionString = "..." });
+    // Now work with another settings
 }
+
+//await foreach (var rd in Query.ReadAllRows("SELECT * FROM table WHERE id=$1", 123)) {
+//    var id = rd.Val<long>("id");
+//}
+
+var deleted_cnt = await new QueryBuilder("DELETE from table")
+    .WhereAndEq("col1", 10)
+    .WhereAnd("col1 * col2 > ??", 20)
+    .ExecuteGetRowsTouched();
+
+//var inserted_id = await new Inserter("table")
+//    .SkipOnConflict()
+//    .Value("id", 123)
+//    .ExecuteReturnField<long?>("id");
+//if (inserted_id != null) {
+//    Console.WriteLine("Was inserted!");
+//}
 
 
 

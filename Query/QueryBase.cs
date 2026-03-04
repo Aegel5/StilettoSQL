@@ -2,7 +2,6 @@
 using System.Data.Common;
 using System.Text;
 
-
 namespace StilettoSQL.Internal;
 
 public class QueryBase {
@@ -77,7 +76,7 @@ public class QueryBase {
                 sb.Append(sql, i_prev, i - i_prev);
                 sb.Append('$');
                 sb.Append(++count);
-                i+=2;
+                i += 2;
                 i_prev = i;
             } else {
                 i++;
