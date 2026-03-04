@@ -90,7 +90,7 @@ public class QueryBase {
             return sql;
         }
 
-        sb.Append(sql, i_prev, i - i_prev + 1);
+        sb.Append(sql, i_prev, sql.Length - i_prev);
 
         if (count != positionParms.Count)
             throw new Exception($"Excepted {count} parms. Have: {positionParms.Count}");
