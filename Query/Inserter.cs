@@ -69,16 +69,11 @@ public class Inserter : Internal.QueryBase {
         return res;
     }
 
-
-    //public Task<long> ExecuteLong(string fieldName = "id") {
-    //    return ExecuteScalar<long>(fieldName);
-    //}
-
     public new Task<T?> ExecuteScalar<T>(string fieldName = "id") {
         return base.ExecuteScalar<T>(BuildSql(fieldName));
     }
 
-    public Task<int> Exec_GetRowsTouched() {
+    public Task<int> ExecuteGetRowsTouched() {
         return ExecuteNonQuery(BuildSql());
     }
 

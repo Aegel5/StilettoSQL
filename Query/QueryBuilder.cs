@@ -80,7 +80,7 @@ public class QueryBuilder : QueryBase {
         return ExecuteReader(ToString());
     }
 
-    public Task<int> Exec_GetRowsTouched() {
+    public Task<int> ExecuteGetRowsTouched() {
         return ExecuteNonQuery(ToString());
     }
 

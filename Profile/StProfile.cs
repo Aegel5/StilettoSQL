@@ -47,30 +47,32 @@ public record StProfile {
 
     internal T? ConvertFromDb<T>(object? obj) {
 
-        if (UserConverterFromDb?.Convert(obj, out T? res) == true){
-            return res;
-        }
-
-        // делаем стандартный конверт
-
+        // 2. Обработка пустоты
         if (obj is null or DBNull) {
-
-            Type type = typeof(T);
-
-            // 1. Ссылочные типы (Class, Interface) всегда могут быть null
-            if (!type.IsValueType) 
+            if (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) != null)
                 return default;
 
-            // 2. Значимые типы (struct) могут быть null только если это Nullable<T>
-            if (Nullable.GetUnderlyingType(type) != null) {
-                return default;
-            }
-
-            throw new Exception("value is DBNull, but type can't hold nullable");
+            throw new InvalidOperationException($"Value is null, but {typeof(T).Name} is not nullable.");
         }
 
-        return (T)Convert.ChangeType(obj, typeof(T));
+        // 3. Прямой каст (быстро и строго: string->string, long->long, long->long?, ...)
+        if (obj is T variable)
+            return variable;
+
+        // 1. Приоритет пользователю
+        if (UserConverterFromDb?.Convert(obj, out T? res) == true)
+            return res;
+
+        // 4. Безопасная до-конвертация чисел (исключая строки)
+        // Позволяет int -> long, long->int (плохо!) но запрещает "123" -> 123
+        //if (obj is not string) {
+        //    Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+        //    return (T)Convert.ChangeType(obj, targetType);
+        //}
+
+        throw new InvalidCastException($"Cannot cast {obj.GetType().Name} to {typeof(T).Name}.");
     }
+
 
 
 }

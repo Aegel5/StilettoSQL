@@ -1,15 +1,7 @@
-﻿using Npgsql;
-using StilettoSQL.Profile;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using StilettoSQL.Profile;
 using System.Data.Common;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
 
 namespace StilettoSQL.Internal;
 
@@ -17,12 +9,6 @@ public class QueryBase {
 
     internal List<StDataToDb>? positionParms;
     protected TimeSpan? _Timeout { get; set; }
-
-    internal QueryBase(QueryBase initFrom) {
-        positionParms = initFrom.positionParms;
-    }
-
-    internal QueryBase() { }
 
     protected void ConsumeParmsFrom(QueryBase other) {
         if (other.positionParms == null) return;
