@@ -25,3 +25,13 @@ if (inserted_id != null) {
     Console.WriteLine("Was inserted!");
 }
 ```
+`AutoProfile` for temporary changing settings
+```csharp
+{
+    using var _holder = new AutoProfile(new StProfile { ConnectionString = "..." });
+    // Now work with another settings
+}
+```
+`IStConverterToDb`, `IStConverterFromDb` for custom data conversions
+```csharp
+```
