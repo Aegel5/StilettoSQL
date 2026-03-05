@@ -25,7 +25,7 @@ public record StProfile {
             if (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) != null)
                 return default;
 
-            throw new InvalidOperationException($"Value is null, but {typeof(T).Name} is not nullable.");
+            throw new InvalidCastException($"Value is null/DBNull, but {typeof(T).Name} is not nullable.");
         }
 
         // Прямой каст (быстро и строго: string->string, long->long, long->long?, ...)
