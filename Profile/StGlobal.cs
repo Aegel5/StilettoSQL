@@ -1,6 +1,8 @@
 ﻿namespace StilettoSQL.Profile;
 public static class StGlobal {
-    public static StProfile DefaultProfile = new();
+    public static StProfile DefaultProfile { get; set; } = new StProfile {
+        CreateConnection = () => throw new NotImplementedException()
+    };
     internal static AsyncLocal<StProfile?> CurrentProfile_ = new();
     public static StProfile CurrentProfile => CurrentProfile_.Value ?? DefaultProfile;
 

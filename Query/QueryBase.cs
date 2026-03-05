@@ -85,8 +85,7 @@ public class QueryBase {
     }
 
     DbConnection NewConnection() {
-        return (StGlobal.CurrentProfile.CreateConnection 
-            ?? throw new Exception("Need set CreateConnection"))();
+        return StGlobal.CurrentProfile.CreateConnection();
     }
     DbCommand NewCommand(IDbConnection con, string sql) {
 

@@ -15,7 +15,7 @@ public interface IStDataConverter {
 
 public record StProfile {
     public StProviderSQL ProviderSQL { get; init; } = StProviderSQL.PostgreSQL;
-    public Func<DbConnection>? CreateConnection { get; init; }
+    public required Func<DbConnection> CreateConnection { get; init; }
     public IStDataConverter? DataConverter { get; init; }
 
     internal T? ConvertFromDb<T>(object? obj) {
