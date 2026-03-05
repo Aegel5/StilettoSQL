@@ -5,7 +5,7 @@ namespace StilettoSQL.Profile;
 
 public enum StDialectSQL {
     Base,
-    Postgress
+    PostgreSQL
 }
 
 public interface IStDataConverter {
@@ -14,7 +14,7 @@ public interface IStDataConverter {
 }
 
 public record StProfile {
-    public StDialectSQL DialectSQL { get; init; } = StDialectSQL.Postgress;
+    public StDialectSQL DialectSQL { get; init; } = StDialectSQL.PostgreSQL;
     public Func<DbConnection>? CreateConnection { get; init; }
     public IStDataConverter? DataConverter { get; init; }
     public bool UsePositionParms { get; init; }
