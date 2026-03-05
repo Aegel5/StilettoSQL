@@ -54,7 +54,7 @@ public class Inserter : Internal.QueryBase {
         }
 
         if (returnField != null) {
-            if (StGlobal.CurrentProfile.Provider.Type == StProviderType.Postgress) {
+            if (StGlobal.CurrentProfile.DialectSQL == StDialectSQL.Postgress) {
                 sb.Append($" returning {returnField}");
             } else {
                 throw new NotSupportedException();

@@ -1,4 +1,5 @@
 ﻿using StilettoSQL.Profile;
+using System.Data;
 using System.Data.Common;
 using System.Text;
 
@@ -6,7 +7,7 @@ namespace StilettoSQL.Internal;
 
 public class QueryBase {
 
-    internal List<StDataToDb>? positionParms;
+    internal List<object?>? positionParms;
     protected TimeSpan? _Timeout { get; set; }
 
     protected void ConsumeParmsFrom(QueryBase other) {
@@ -16,86 +17,119 @@ public class QueryBase {
         other.positionParms = null;
     }
 
-    protected StDataToDb ConvertToDb(object? obj) {
-        return StGlobal.CurrentProfile.ConvertToDb(obj);
+    protected void AddPosParm(object? data) {
+        (positionParms ??= new()).Add(data);
     }
 
-    protected void AddPosParm<T>(T data) {
-        positionParms ??= new();
-        positionParms.Add(ConvertToDb(data));
+    protected void AddPosParms(params object?[] list) {
+        if (list.Length == 0) return;
+        (positionParms ??= new()).AddRange(list);
     }
-
-    protected void AddPosParms(params object[] list) {
-        foreach (var item in list) {
-            AddPosParm(item);
-        }
-    }
-
-    ParamsForProvider CreateProviderParms(string sql) {
-
-        sql = ReplacePlaceholders(sql);
-
-        var res = new ParamsForProvider {
-            sql = sql,
-            timeout = _Timeout,
-            positionParms = positionParms
-        };
-        return res;
-    }
-
-    protected Task<int> ExecuteNonQuery(string sql) {
-        return StGlobal.CurrentProvider.ExecuteNonQuery(CreateProviderParms(sql));
-    }
-
-    protected Task<object?> ExecuteScalar(string sql) {
-        return StGlobal.CurrentProvider.ExecuteScalar(CreateProviderParms(sql));
-    }
-
-    async protected Task<T?> ExecuteScalar<T>(string sql) {
-        return StGlobal.CurrentProfile.ConvertFromDb<T>(await ExecuteScalar(sql));
-    }
-
-    protected IAsyncEnumerable<DbDataReader> ExecuteReader(string sql) {
-        return StGlobal.CurrentProvider.ExecuteReader(CreateProviderParms(sql));
-    }
-
     public string ReplacePlaceholders(string sql) {
 
         if (positionParms == null) return sql;
 
         StringBuilder? sb = null;
-        int i_prev = 0;
+        int i_from = 0;
         int count = 0;
         int i = 0;
         while (i < sql.Length - 1) {
 
-            // todo: skip strings
+            // skip strings
+            if (sql[i] == '\'') {
+                i++;
+                for (; i < sql.Length - 1; i++) {
+                    if (sql[i] == '\'') {
+                        //if (sql[i + 1] == '\'') {
+                        //    i++; 
+                        //    continue;
+                        //}
+                        //if (sql[i - 1] == '\\') {
+                        //    continue;
+                        //}
+                        i++;
+                        break;
+                    }
+                }
+                continue;
+            }
 
             if (sql[i] == '?' && sql[i + 1] == '?') {
                 sb ??= new(sql.Length + Math.Max(0, positionParms.Count - 8));
-                sb.Append(sql, i_prev, i - i_prev);
+                sb.Append(sql, i_from, i - i_from);
                 sb.Append('$');
                 sb.Append(++count);
                 i += 2;
-                i_prev = i;
+                i_from = i;
             } else {
                 i++;
             }
 
         }
 
-        if (count == 0) {
-            // ok user can use native $1, $2, ...
+        if (sb == null) {
+            // ok user can use native ($1, $2, ...) or (?, ?, ...)
             return sql;
         }
 
-        sb.Append(sql, i_prev, sql.Length - i_prev);
+        sb.Append(sql, i_from, sql.Length - i_from);
 
         if (count != positionParms.Count)
             throw new Exception($"Excepted {count} parms. Have: {positionParms.Count}");
 
         var res = sb.ToString();
         return res;
+    }
+
+    DbConnection NewConnection() {
+        return (StGlobal.CurrentProfile.CreateConnection 
+            ?? throw new Exception("Need set CreateConnection"))();
+    }
+    DbCommand NewCommand(IDbConnection con, string sql) {
+
+        var profile = StGlobal.CurrentProfile;
+
+        IDbCommand cmd = con.CreateCommand();
+        cmd.CommandText = ReplacePlaceholders(sql);
+        if (_Timeout != null) {
+            cmd.CommandTimeout = (int)_Timeout.Value.TotalSeconds;
+        }
+        if (positionParms != null) {
+            foreach (var item in positionParms) {
+                var p = cmd.CreateParameter();
+                if (profile.DataConverter?.ToDb(item, p) != true) {
+                    // стандартный конверт
+                    p.Value = item ?? DBNull.Value;
+                }
+                cmd.Parameters.Add(item);
+            }
+        }
+        return cmd as DbCommand ?? throw new NotSupportedException();
+    }
+    public async IAsyncEnumerable<DbDataReader> ExecuteReader(string sql) {
+        using var con = NewConnection();
+        using var cmd = NewCommand(con, sql);
+        await con.OpenAsync();
+        using var rdr = await cmd.ExecuteReaderAsync();
+        while (await rdr.ReadAsync()) {
+            yield return rdr;
+        }
+    }
+    async public Task<object?> ExecuteScalar(string sql) {
+        using var con = NewConnection();
+        using var cmd = NewCommand(con, sql);
+        await con.OpenAsync();
+        var res = await cmd.ExecuteScalarAsync();
+        return res;
+    }
+    async public Task<T?> ExecuteScalar<T>(string sql) {
+        return StGlobal.CurrentProfile.ConvertFromDb<T>(await ExecuteScalar(sql));
+    }
+    async public Task<int> ExecuteNonQuery(string sql) {
+        using var con = NewConnection();
+        using var cmd = NewCommand(con, sql);
+        await con.OpenAsync();
+        return await cmd.ExecuteNonQueryAsync();
     }
 
 

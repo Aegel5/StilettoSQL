@@ -8,6 +8,8 @@ using StilettoSQL.Query; {
 //    var id = rd.Val<long>("id");
 //}
 
+var res = await Query.ExecuteGetRowsTouched("Select ' OR''OR ??' from table where a=??", 10);
+
 var deleted_cnt = await new QueryBuilder("DELETE from table")
     .WhereAndEq("col1", 10)
     .WhereAnd("col1 * col2 > ??", 20)
