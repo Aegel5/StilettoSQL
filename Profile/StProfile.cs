@@ -9,8 +9,8 @@ public enum StDialectSQL {
 }
 
 public interface IStDataConverter {
-    bool ToDb(object? value, IDbDataParameter parm);
-    bool FromDb<T>(object? value, out T? result);
+    bool ToDb(object value, IDbDataParameter parm);
+    bool FromDb<T>(object value, out T result);
 }
 
 public record StProfile {
@@ -32,12 +32,10 @@ public record StProfile {
         if (obj is T variable)
             return variable;
 
-        if (DataConverter?.FromDb(obj, out T? res) == true)
+        if (DataConverter?.FromDb(obj, out T res) == true)
             return res;
 
         throw new InvalidCastException($"Cannot cast {obj.GetType().Name} to {typeof(T).Name}.");
     }
-
-
 
 }

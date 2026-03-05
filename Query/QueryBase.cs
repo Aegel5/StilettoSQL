@@ -97,11 +97,14 @@ public class QueryBase {
         if (positionParms != null) {
             foreach (var item in positionParms) {
                 var p = cmd.CreateParameter();
-                if (profile.DataConverter?.ToDb(item, p) != true) {
-                    // стандартный конверт
-                    p.Value = item ?? DBNull.Value;
+                if (item == null) p.Value = DBNull.Value;
+                else {
+                    if (profile.DataConverter?.ToDb(item, p) != true) {
+                        // стандартный конверт
+                        p.Value = item;
+                    }
                 }
-                cmd.Parameters.Add(item);
+                cmd.Parameters.Add(p);
             }
         }
         return cmd as DbCommand ?? throw new NotSupportedException();
