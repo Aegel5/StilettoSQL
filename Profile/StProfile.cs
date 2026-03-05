@@ -3,9 +3,9 @@ using System.Data.Common;
 
 namespace StilettoSQL.Profile;
 
-public enum StDialectSQL {
-    Base,
-    PostgreSQL
+public enum StProviderSQL {
+    PostgreSQL,
+    MySQL
 }
 
 public interface IStDataConverter {
@@ -14,10 +14,9 @@ public interface IStDataConverter {
 }
 
 public record StProfile {
-    public StDialectSQL DialectSQL { get; init; } = StDialectSQL.PostgreSQL;
+    public StProviderSQL ProviderSQL { get; init; } = StProviderSQL.PostgreSQL;
     public Func<DbConnection>? CreateConnection { get; init; }
     public IStDataConverter? DataConverter { get; init; }
-    public bool UsePositionParms { get; init; }
 
     internal T? ConvertFromDb<T>(object? obj) {
 

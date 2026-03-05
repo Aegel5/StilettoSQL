@@ -25,7 +25,7 @@ public class QueryBase {
         if (list.Length == 0) return;
         (positionParms ??= new()).AddRange(list);
     }
-    public string ReplacePlaceholders(string sql) {
+    public string ReplacePlaceholders(string sql, StProfile profile) {
 
         if (positionParms == null) return sql;
 
@@ -39,14 +39,11 @@ public class QueryBase {
             if (sql[i] == '\'') {
                 i++;
                 for (; i < sql.Length - 1; i++) {
+                    //if (sql[i] == '\\' && sql[i+1] == '\'') {
+                    //    i += 2 ;
+                    //    continue;
+                    //}
                     if (sql[i] == '\'') {
-                        //if (sql[i + 1] == '\'') {
-                        //    i++; 
-                        //    continue;
-                        //}
-                        //if (sql[i - 1] == '\\') {
-                        //    continue;
-                        //}
                         i++;
                         break;
                     }
@@ -55,10 +52,16 @@ public class QueryBase {
             }
 
             if (sql[i] == '?' && sql[i + 1] == '?') {
-                sb ??= new(sql.Length + Math.Max(0, positionParms.Count - 8));
+                sb ??= new(sql.Length + positionParms.Count);
                 sb.Append(sql, i_from, i - i_from);
-                sb.Append('$');
-                sb.Append(++count);
+                if (profile.ProviderSQL == StProviderSQL.PostgreSQL) {
+                    sb.Append('$');
+                    sb.Append(++count);
+                } else if (profile.ProviderSQL == StProviderSQL.MySQL) {
+                    sb.Append('?');
+                } else {
+                    throw new NotSupportedException();
+                }
                 i += 2;
                 i_from = i;
             } else {
@@ -90,7 +93,7 @@ public class QueryBase {
         var profile = StGlobal.CurrentProfile;
 
         IDbCommand cmd = con.CreateCommand();
-        cmd.CommandText = ReplacePlaceholders(sql);
+        cmd.CommandText = ReplacePlaceholders(sql, profile);
         if (_Timeout != null) {
             cmd.CommandTimeout = (int)_Timeout.Value.TotalSeconds;
         }
