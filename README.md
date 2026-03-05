@@ -38,3 +38,12 @@ async Task Func() {
 ```
 ## Data conversion
 `IStDataConverter` used for custom data conversions
+## Transactions
+`AutoTransaction` used for easy transactions
+```csharp
+{
+    using var transaction = new AutoTransaction();
+    // ...
+    transaction.Commit();
+}
+```
