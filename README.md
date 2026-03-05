@@ -1,7 +1,9 @@
 # StilettoSQL
-Ultra-minimalistic SQL library for C#
+Ultra-minimalist driver-agnostic SQL library for C#
 
-## Examples
+## Queries
+All examples for PostgreSQL
+
 `Query` for simple and static queries.
 ```csharp
 await foreach (var rd in Query.ReadAllRows("SELECT * FROM table WHERE id=$1", 123)){
@@ -22,16 +24,17 @@ var inserted_id = await new Inserter("table")
     .Value("id", 123)
     .ExecuteReturnField<long?>("id"); // SQL: INSERT into table(id) VALUES ($1) on conflict do nothing returning id
 if (inserted_id != null) {
-    Console.WriteLine("Was inserted!");
+    Console.WriteLine($"Was inserted: {inserted_id}");
 }
 ```
-`AutoProfile` for temporary changing settings
+## Profiles
+Library use global profile for easy settings change
 ```csharp
-{
-    using var _holder = new AutoProfile(new StProfile { ConnectionString = "..." });
-    // Now work with another settings
+StGlobal.DefaultProfile = new StProfile(); // Set default profile
+async Task Func() {
+    StGlobal.ChangeProfileAsyncLocal(StGlobal.DefaultProfile with {});
+    // Now work with another settings in this async context
 }
 ```
-`IStConverterToDb`, `IStConverterFromDb` for custom data conversions
-```csharp
-```
+## Data conversion
+`IStDataConverter` used for custom data conversions
