@@ -1,6 +1,20 @@
 # StilettoSQL
 Ultra-minimalist driver-agnostic SQL library for C#
 
+## Limitations
+- Only async functions
+- Only postion data parameters
+
+## Profiles
+Library uses a global profile for easily settings change.
+```csharp
+StGlobal.DefaultProfile = new StProfile { CreateConnection = () => ... }; // Set default profile
+async Task Func() {
+    StGlobal.ChangeProfileAsyncLocal(new StProfile { ... });
+    // Now work with another settings in this async context
+}
+```
+
 ## Queries
 All examples for PostgreSQL
 
@@ -27,15 +41,7 @@ if (inserted_id != null) {
     Console.WriteLine($"Was inserted: {inserted_id}");
 }
 ```
-## Profiles
-Library use global profile for easy settings change
-```csharp
-StGlobal.DefaultProfile = new StProfile(); // Set default profile
-async Task Func() {
-    StGlobal.ChangeProfileAsyncLocal(StGlobal.DefaultProfile with {});
-    // Now work with another settings in this async context
-}
-```
+
 ## Data conversion
 `IStDataConverter` used for custom data conversions
 ## Transactions
