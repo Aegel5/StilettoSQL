@@ -1,4 +1,5 @@
 ﻿namespace StilettoSQL.Profile;
+
 public static class StGlobal {
     public static StProfile DefaultProfile { get; set; } = new StProfile {
         CreateConnection = () => throw new NotImplementedException()

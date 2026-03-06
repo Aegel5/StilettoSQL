@@ -2,6 +2,7 @@
 using System.Text;
 
 namespace StilettoSQL.Query;
+
 public class Inserter : Internal.QueryBase {
 
     List<(string name, string? sql)> names = new();
