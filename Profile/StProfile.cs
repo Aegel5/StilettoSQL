@@ -10,7 +10,7 @@ public enum StProviderSQL {
 
 public interface IStDataConverter {
     bool ToDb(object value, IDbDataParameter parm);
-    bool FromDb<T>(object value, out T result);
+    bool FromDb<T>(DbDataReader reader, int ordinal, out T result);
 }
 
 public record StProfile {
@@ -18,23 +18,24 @@ public record StProfile {
     public required Func<DbConnection> CreateConnection { get; init; }
     public IStDataConverter? DataConverter { get; init; }
 
-    internal T? ConvertFromDb<T>(object? obj) {
+    static internal T? ConvertToNull<T>() {
+        if (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) != null)
+            return default;
 
-        if (obj is null or DBNull) {
-            if (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) != null)
-                return default;
+        throw new InvalidCastException($"Value is NULL, but {typeof(T).Name} is not nullable.");
+    }
 
-            throw new InvalidCastException($"Value is null/DBNull, but {typeof(T).Name} is not nullable.");
+    internal T? ConvertFromDb<T>(DbDataReader reader, int ordinal) {
+
+        if (reader.IsDBNull(ordinal)) {
+            return ConvertToNull<T>();
         }
 
-        // Прямой каст (быстро и строго: string->string, long->long, long->long?, ...)
-        if (obj is T variable)
-            return variable;
-
-        if (DataConverter?.FromDb(obj, out T res) == true)
+        if (DataConverter?.FromDb(reader, ordinal, out T res) == true)
             return res;
 
-        throw new InvalidCastException($"Cannot cast {obj.GetType().Name} to {typeof(T).Name}.");
+        return reader.GetFieldValue<T>(ordinal);
+
     }
 
 }

@@ -4,11 +4,14 @@ using System.Data.Common;
 namespace StilettoSQL.Query;
 public static class _DbLoader_Extension {
 
-    // делаем cast
-    public static T? Val<T>(this DbDataReader s, string key)
-        => StGlobal.CurrentProfile.ConvertFromDb<T>(s[key]);
+    // With cast
+    public static T? Val<T>(this DbDataReader reader, int ordinal) // quick access (in cycle)
+        => StGlobal.CurrentProfile.ConvertFromDb<T>(reader, ordinal); 
+    public static T? Val<T>(this DbDataReader reader, string key)  // access by name
+        => Val<T>(reader, reader.GetOrdinal(key));
 
-    // отдаем напрямую
-    public static object? Val(this DbDataReader s, string key) => s[key];
+    // Get default types
+    //public static object? Val(this DbDataReader s, string key) => s[key];
+    //public static object? Val(this DbDataReader s, int ordinal) => s.GetValue(ordinal); 
 
 }

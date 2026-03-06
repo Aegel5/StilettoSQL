@@ -111,7 +111,7 @@ public class QueryBase {
         }
         return cmd as DbCommand ?? throw new NotSupportedException();
     }
-    public async IAsyncEnumerable<DbDataReader> ExecuteReader(string sql) {
+    protected async IAsyncEnumerable<DbDataReader> ExecuteReader(string sql) {
         using var con = NewConnection();
         using var cmd = NewCommand(con, sql);
         await con.OpenAsync();
@@ -120,17 +120,23 @@ public class QueryBase {
             yield return rdr;
         }
     }
-    async public Task<object?> ExecuteScalar(string sql) {
+    async protected Task<object?> ExecuteScalar(string sql) {
         using var con = NewConnection();
         using var cmd = NewCommand(con, sql);
         await con.OpenAsync();
-        var res = await cmd.ExecuteScalarAsync();
-        return res;
+        return cmd.ExecuteScalar();
     }
-    async public Task<T?> ExecuteScalar<T>(string sql) {
-        return StGlobal.CurrentProfile.ConvertFromDb<T>(await ExecuteScalar(sql));
+    async protected Task<T?> ExecuteScalar<T>(string sql) {
+        using var con = NewConnection();
+        using var cmd = NewCommand(con, sql);
+        await con.OpenAsync();
+        // Use reader for auto-conversion.
+        using var rdr = await cmd.ExecuteReaderAsync();
+        if (!await rdr.ReadAsync()) return StProfile.ConvertToNull<T>();
+        return StGlobal.CurrentProfile.ConvertFromDb<T>(rdr, 0);
     }
-    async public Task<int> ExecuteNonQuery(string sql) {
+
+    async protected Task<int> ExecuteNonQuery(string sql) {
         using var con = NewConnection();
         using var cmd = NewCommand(con, sql);
         await con.OpenAsync();
