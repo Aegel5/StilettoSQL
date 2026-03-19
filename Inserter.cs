@@ -1,5 +1,4 @@
-﻿using StilettoSQL.Profile;
-using System.Text;
+﻿using System.Text;
 
 namespace StilettoSQL.Query;
 
@@ -55,7 +54,7 @@ public class Inserter : Internal.QueryBase {
         }
 
         if (returnField != null) {
-            if (StGlobal.CurrentProfile.ProviderSQL == StProviderSQL.PostgreSQL) {
+            if (StProfile.CurrentProfile.ProviderSQL == StProviderSQL.PostgreSQL) {
                 sb.Append($" returning {returnField}");
             } else {
                 throw new NotSupportedException();

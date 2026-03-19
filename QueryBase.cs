@@ -1,4 +1,4 @@
-﻿using StilettoSQL.Profile;
+﻿using StilettoSQL.Query;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -84,63 +84,96 @@ public class QueryBase {
         return res;
     }
 
-    DbConnection NewConnection() {
-        return StGlobal.CurrentProfile.CreateConnection();
+    class ActionCtx : IDisposable {
+
+        public DbConnection? con;
+        public DbCommand? cmd;
+        public bool need_dispose_con = true;
+
+        public void Dispose() {
+            if(need_dispose_con) con?.Dispose();
+            cmd?.Dispose();
+        }
     }
-    DbCommand NewCommand(IDbConnection con, string sql) {
 
-        var profile = StGlobal.CurrentProfile;
+    async Task<ActionCtx> NewCommandCtx(string sql) {
 
-        IDbCommand cmd = con.CreateCommand();
-        cmd.CommandText = ReplacePlaceholders(sql, profile);
-        if (_Timeout != null) {
-            cmd.CommandTimeout = (int)_Timeout.Value.TotalSeconds;
-        }
-        if (positionParms != null) {
-            foreach (var item in positionParms) {
-                var p = cmd.CreateParameter();
-                if (item == null) p.Value = DBNull.Value;
-                else {
-                    if (profile.DataConverter?.ToDb(item, p) != true) {
-                        // стандартный конверт
-                        p.Value = item;
-                    }
+        var ctx = new ActionCtx();
+
+        try {
+
+            var profile = StProfile.CurrentProfile;
+            var transact = StProfile.CurrentTransaction_.Value;
+
+            if (transact == null) {
+                // как обычно, делаем новое подключение
+                ctx.con = profile.CreateConnection();
+                await ctx.con.OpenAsync();
+                ctx.cmd = ctx.con.CreateCommand();
+            } else {
+                // коннектимся к транзакции
+                ctx.need_dispose_con = false; // не владеем
+                if (transact.Connection != null) {
+                    ctx.con = transact.Connection;
+                } else {
+                    // первое подключение
+                    ctx.con = transact.Connection = profile.CreateConnection();
+                    await ctx.con.OpenAsync();
+                    transact.transact = await ctx.con.BeginTransactionAsync();
                 }
-                cmd.Parameters.Add(p);
+                ctx.cmd = ctx.con.CreateCommand();
+                ctx.cmd.Transaction = transact.transact;
             }
+
+            var cmd = ctx.cmd;
+
+            cmd.CommandText = ReplacePlaceholders(sql, profile);
+            if (_Timeout != null) {
+                cmd.CommandTimeout = (int)_Timeout.Value.TotalSeconds;
+            }
+            if (positionParms != null) {
+                foreach (var item in positionParms) {
+                    var p = cmd.CreateParameter();
+                    if (item == null) p.Value = DBNull.Value;
+                    else {
+                        if (profile.DataConverter?.ToDb(item, p) != true) {
+                            // стандартный конверт
+                            p.Value = item;
+                        }
+                    }
+                    cmd.Parameters.Add(p);
+                }
+            }
+
+            return ctx;
+
+        } catch (Exception) {
+            ctx.Dispose(); // чистка
+            throw;
         }
-        return cmd as DbCommand ?? throw new NotSupportedException();
     }
     protected async IAsyncEnumerable<DbDataReader> ExecuteReader(string sql) {
-        using var con = NewConnection();
-        using var cmd = NewCommand(con, sql);
-        await con.OpenAsync();
-        using var rdr = await cmd.ExecuteReaderAsync();
+        using var ctx = await NewCommandCtx(sql);
+        using var rdr = await ctx.cmd.ExecuteReaderAsync();
         while (await rdr.ReadAsync()) {
             yield return rdr;
         }
     }
     async protected Task<object?> ExecuteScalar(string sql) {
-        using var con = NewConnection();
-        using var cmd = NewCommand(con, sql);
-        await con.OpenAsync();
-        return cmd.ExecuteScalar();
+        using var ctx = await NewCommandCtx(sql);
+        return ctx.cmd.ExecuteScalar();
     }
     async protected Task<T?> ExecuteScalar<T>(string sql) {
-        using var con = NewConnection();
-        using var cmd = NewCommand(con, sql);
-        await con.OpenAsync();
+        using var ctx = await NewCommandCtx(sql);
         // Use reader for auto-conversion.
-        using var rdr = await cmd.ExecuteReaderAsync();
+        using var rdr = await ctx.cmd.ExecuteReaderAsync();
         if (!await rdr.ReadAsync()) return StProfile.ConvertToNull<T>();
-        return StGlobal.CurrentProfile.ConvertFromDb<T>(rdr, 0);
+        return StProfile.CurrentProfile.ConvertFromDb<T>(rdr, 0);
     }
 
     async protected Task<int> ExecuteNonQuery(string sql) {
-        using var con = NewConnection();
-        using var cmd = NewCommand(con, sql);
-        await con.OpenAsync();
-        return await cmd.ExecuteNonQueryAsync();
+        using var ctx = await NewCommandCtx(sql);
+        return await ctx.cmd.ExecuteNonQueryAsync();
     }
 
 
