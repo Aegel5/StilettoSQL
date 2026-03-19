@@ -49,7 +49,7 @@ if (inserted_id != null) {
 ```csharp
 {
     using var transaction = new AutoTransaction();
-    // ...
-    transaction.Commit();
+    // do as usual
+    await transaction.CommitAsync();
 }
 ```
