@@ -88,9 +88,12 @@ public class QueryBase {
 
         public DbConnection? con;
         public DbCommand? cmd;
+        public AutoTransaction? transact;
+
         public bool need_dispose_con = true;
 
         public void Dispose() {
+            if (transact != null) transact.commandsCount--;
             if(need_dispose_con) con?.Dispose();
             cmd?.Dispose();
         }
@@ -121,6 +124,11 @@ public class QueryBase {
                     await ctx.con.OpenAsync();
                     transact.transact = await ctx.con.BeginTransactionAsync();
                 }
+                if (transact.commandsCount != 0) {
+                    throw new Exception("Other command still in progress for transaction connection");
+                }
+                transact.commandsCount++;
+                ctx.transact = transact;
                 ctx.cmd = ctx.con.CreateCommand();
                 ctx.cmd.Transaction = transact.transact;
             }

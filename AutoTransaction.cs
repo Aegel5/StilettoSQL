@@ -8,6 +8,7 @@ public sealed class AutoTransaction : IDisposable {
 
     internal DbConnection? Connection;
     internal DbTransaction? transact;
+    internal int commandsCount = 0;
 
     public AutoTransaction() {
         if (StProfile.CurrentTransaction_.Value != null) {
