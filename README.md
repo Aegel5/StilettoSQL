@@ -15,8 +15,12 @@ async Task Func() {
 }
 ```
 
+## Universal placeholder
+ `??` can be used as universal position placeholder with all supported SQL drivers. Example: `SELECT * FROM table WHERE id=??` will produce `SELECT * FROM table WHERE id=$1` on PostgreSQL.
+ 
 ## Queries
 All examples for PostgreSQL
+
 
 `Query` for simple and static queries.
 ```csharp
