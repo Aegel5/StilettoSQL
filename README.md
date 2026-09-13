@@ -47,7 +47,7 @@ if (inserted_id != null) {
 ```
 
 ## Data conversion
-`IStDataConverter` used for custom data conversions
+`IStDataConverter` used for custom data conversions. Useful for automatic conversion to/from json from raw `utf-8` data.
 ## Transactions
 `AutoTransaction` used for easy transactions
 ```csharp
