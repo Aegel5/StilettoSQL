@@ -1,7 +1,7 @@
 # StilettoSQL
 Ultra-minimalist driver-agnostic SQL library for C#. 
 
-StilettoSQL operates solely on strings without creating complex objects, providing complete control over the process. Consequently, there are no restrictions on the complexity of DB queries
+StilettoSQL operates **solely on strings** without creating complex objects, providing complete control over the process. Consequently, there are no restrictions on the complexity of DB queries
 
 ## Limitations
 - Only async functions
