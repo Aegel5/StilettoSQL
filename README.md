@@ -55,7 +55,8 @@ if (inserted_id != null) {
 ```csharp
 {
     using var transaction = new AutoTransaction();
-    // do as usual
+    // query 1...
+    // query 2...
     await transaction.CommitAsync();
 }
 ```
